@@ -27,56 +27,56 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
-import uk.gov.hmcts.reform.dev.models.Task;
-import uk.gov.hmcts.reform.dev.services.TaskService;
+import uk.gov.hmcts.reform.dev.models.Case;
+import uk.gov.hmcts.reform.dev.services.CaseService;
 
 @ExtendWith(MockitoExtension.class)
-class TaskControllerUnitTest {
+class CaseControllerUnitTest {
 
     private MockMvc mockMvc;
 
     @Mock
-    private TaskService taskService;
+    private CaseService caseService;
 
     @InjectMocks
-    private TaskController taskController;
+    private CaseController caseController;
 
     private ObjectMapper objectMapper;
 
     @BeforeEach
     void setUp() {
-        mockMvc = MockMvcBuilders.standaloneSetup(taskController).build();
+        mockMvc = MockMvcBuilders.standaloneSetup(caseController).build();
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
     }
 
     @Test
-    @DisplayName("Should create task successfully with valid data")
-    void createTask_ValidData_ReturnsCreated() throws Exception {
-        Task task = new Task();
-        task.setTitle("Test Task");
+    @DisplayName("Should create case successfully with valid data")
+    void createCase_ValidData_ReturnsCreated() throws Exception {
+        Case task = new Case();
+        task.setTitle("Test Case");
         task.setDescription("Test Description");
         task.setStatus("TODO");
         task.setCaseId("CASE-123456");
         task.setDueDateTime(LocalDateTime.now().plusDays(1));
 
-        Task createdTask = new Task();
+        Case createdTask = new Case();
         createdTask.setId(1L);
-        createdTask.setTitle("Test Task");
+        createdTask.setTitle("Test Case");
         createdTask.setDescription("Test Description");
         createdTask.setStatus("TODO");
         createdTask.setCaseId("CASE-123456");
         createdTask.setDueDateTime(task.getDueDateTime());
         createdTask.setCreatedDate(LocalDateTime.now());
 
-        when(taskService.createTask(any(Task.class))).thenReturn(createdTask);
+        when(caseService.createCase(any(Case.class))).thenReturn(createdTask);
 
-        mockMvc.perform(post("/api/tasks")
+        mockMvc.perform(post("/api/cases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(task)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Test Task"))
+                .andExpect(jsonPath("$.title").value("Test Case"))
                 .andExpect(jsonPath("$.description").value("Test Description"))
                 .andExpect(jsonPath("$.status").value("TODO"))
                 .andExpect(jsonPath("$.caseId").value("CASE-123456"));
@@ -84,13 +84,13 @@ class TaskControllerUnitTest {
 
     @Test
     @DisplayName("Should return bad request when title is null")
-    void createTask_NullTitle_ReturnsBadRequest() throws Exception {
-        Task task = new Task();
+    void createCase_NullTitle_ReturnsBadRequest() throws Exception {
+        Case task = new Case();
         task.setDescription("Test Description");
         task.setStatus("TODO");
         task.setCaseId("CASE-123456");
 
-        mockMvc.perform(post("/api/tasks")
+        mockMvc.perform(post("/api/cases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(task)))
                 .andExpect(status().isBadRequest());
@@ -98,14 +98,14 @@ class TaskControllerUnitTest {
 
     @Test
     @DisplayName("Should return bad request when title is empty")
-    void createTask_EmptyTitle_ReturnsBadRequest() throws Exception {
-        Task task = new Task();
+    void createCase_EmptyTitle_ReturnsBadRequest() throws Exception {
+        Case task = new Case();
         task.setTitle("");
         task.setDescription("Test Description");
         task.setStatus("TODO");
         task.setCaseId("CASE-123456");
 
-        mockMvc.perform(post("/api/tasks")
+        mockMvc.perform(post("/api/cases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(task)))
                 .andExpect(status().isBadRequest());
@@ -113,105 +113,105 @@ class TaskControllerUnitTest {
 
     @Test
     @DisplayName("Should return bad request when title is blank")
-    void createTask_BlankTitle_ReturnsBadRequest() throws Exception {
-        Task task = new Task();
+    void createCase_BlankTitle_ReturnsBadRequest() throws Exception {
+        Case task = new Case();
         task.setTitle("   ");
         task.setDescription("Test Description");
         task.setStatus("TODO");
         task.setCaseId("CASE-123456");
 
-        mockMvc.perform(post("/api/tasks")
+        mockMvc.perform(post("/api/cases")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(task)))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("Should return task when valid ID is provided")
-    void getTaskById_ValidId_ReturnsTask() throws Exception {
-        Task task = new Task();
+    @DisplayName("Should return case when valid ID is provided")
+    void getCaseById_ValidId_ReturnsCase() throws Exception {
+        Case task = new Case();
         task.setId(1L);
-        task.setTitle("Test Task");
+        task.setTitle("Test Case");
         task.setDescription("Test Description");
         task.setStatus("TODO");
         task.setCaseId("CASE-123456");
         task.setCreatedDate(LocalDateTime.now());
 
-        when(taskService.getTaskById(1L)).thenReturn(Optional.of(task));
+        when(caseService.getCaseById(1L)).thenReturn(Optional.of(task));
 
-        mockMvc.perform(get("/api/tasks/1"))
+        mockMvc.perform(get("/api/cases/1"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Test Task"))
+                .andExpect(jsonPath("$.title").value("Test Case"))
                 .andExpect(jsonPath("$.description").value("Test Description"))
                 .andExpect(jsonPath("$.status").value("TODO"))
                 .andExpect(jsonPath("$.caseId").value("CASE-123456"));
     }
 
     @Test
-    @DisplayName("Should return not found when task ID does not exist")
-    void getTaskById_NonExistentId_ReturnsNotFound() throws Exception {
-        when(taskService.getTaskById(999L)).thenReturn(Optional.empty());
+    @DisplayName("Should return not found when case ID does not exist")
+    void getCaseById_NonExistentId_ReturnsNotFound() throws Exception {
+        when(caseService.getCaseById(999L)).thenReturn(Optional.empty());
 
-        mockMvc.perform(get("/api/tasks/999"))
+        mockMvc.perform(get("/api/cases/999"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("Should return all tasks")
-    void getAllTasks_ReturnsAllTasks() throws Exception {
-        Task task1 = new Task();
-        task1.setId(1L);
-        task1.setTitle("Task 1");
-        task1.setStatus("TODO");
-        task1.setCaseId("CASE-123456");
+    @DisplayName("Should return all cases")
+    void getAllCases_ReturnsAllCases() throws Exception {
+        Case case1 = new Case();
+        case1.setId(1L);
+        case1.setTitle("Case 1");
+        case1.setStatus("TODO");
+        case1.setCaseId("CASE-123456");
 
-        Task task2 = new Task();
-        task2.setId(2L);
-        task2.setTitle("Task 2");
-        task2.setStatus("IN_PROGRESS");
-        task2.setCaseId("CASE-654321");
+        Case case2 = new Case();
+        case2.setId(2L);
+        case2.setTitle("Case 2");
+        case2.setStatus("IN_PROGRESS");
+        case2.setCaseId("CASE-654321");
 
-        List<Task> tasks = Arrays.asList(task1, task2);
-        when(taskService.getAllTasks()).thenReturn(tasks);
+        List<Case> cases = Arrays.asList(case1, case2);
+        when(caseService.getAllCases()).thenReturn(cases);
 
-        mockMvc.perform(get("/api/tasks"))
+        mockMvc.perform(get("/api/cases"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value(1))
-                .andExpect(jsonPath("$[0].title").value("Task 1"))
+                .andExpect(jsonPath("$[0].title").value("Case 1"))
                 .andExpect(jsonPath("$[0].status").value("TODO"))
                 .andExpect(jsonPath("$[1].id").value(2))
-                .andExpect(jsonPath("$[1].title").value("Task 2"))
+                .andExpect(jsonPath("$[1].title").value("Case 2"))
                 .andExpect(jsonPath("$[1].status").value("IN_PROGRESS"));
     }
 
     @Test
-    @DisplayName("Should update task status successfully")
-    void updateTaskStatus_ValidData_ReturnsUpdatedTask() throws Exception {
-        Task updatedTask = new Task();
-        updatedTask.setId(1L);
-        updatedTask.setTitle("Test Task");
-        updatedTask.setStatus("COMPLETED");
-        updatedTask.setCaseId("CASE-123456");
-        updatedTask.setUpdatedDate(LocalDateTime.now());
+    @DisplayName("Should update case status successfully")
+    void updateCaseStatus_ValidData_ReturnsUpdatedCase() throws Exception {
+        Case updatedCase = new Case();
+        updatedCase.setId(1L);
+        updatedCase.setTitle("Test Case");
+        updatedCase.setStatus("COMPLETED");
+        updatedCase.setCaseId("CASE-123456");
+        updatedCase.setUpdatedDate(LocalDateTime.now());
 
-        when(taskService.updateTaskStatus(1L, "COMPLETED")).thenReturn(updatedTask);
+        when(caseService.updateCaseStatus(1L, "COMPLETED")).thenReturn(updatedCase);
 
-        mockMvc.perform(put("/api/tasks/1/status")
+        mockMvc.perform(put("/api/cases/1/status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\": \"COMPLETED\"}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
-                .andExpect(jsonPath("$.title").value("Test Task"))
+                .andExpect(jsonPath("$.title").value("Test Case"))
                 .andExpect(jsonPath("$.status").value("COMPLETED"));
     }
 
     @Test
     @DisplayName("Should return bad request when status is null")
-    void updateTaskStatus_NullStatus_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(put("/api/tasks/1/status")
+    void updateCaseStatus_NullStatus_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(put("/api/cases/1/status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
                 .andExpect(status().isBadRequest());
@@ -219,8 +219,8 @@ class TaskControllerUnitTest {
 
     @Test
     @DisplayName("Should return bad request when status is empty")
-    void updateTaskStatus_EmptyStatus_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(put("/api/tasks/1/status")
+    void updateCaseStatus_EmptyStatus_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(put("/api/cases/1/status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\": \"\"}"))
                 .andExpect(status().isBadRequest());
@@ -228,39 +228,39 @@ class TaskControllerUnitTest {
 
     @Test
     @DisplayName("Should return bad request when status is blank")
-    void updateTaskStatus_BlankStatus_ReturnsBadRequest() throws Exception {
-        mockMvc.perform(put("/api/tasks/1/status")
+    void updateCaseStatus_BlankStatus_ReturnsBadRequest() throws Exception {
+        mockMvc.perform(put("/api/cases/1/status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\": \"   \"}"))
                 .andExpect(status().isBadRequest());
     }
 
     @Test
-    @DisplayName("Should return not found when updating non-existent task")
-    void updateTaskStatus_NonExistentTask_ReturnsNotFound() throws Exception {
-        when(taskService.updateTaskStatus(999L, "COMPLETED")).thenReturn(null);
+    @DisplayName("Should return not found when updating non-existent case")
+    void updateCaseStatus_NonExistentCase_ReturnsNotFound() throws Exception {
+        when(caseService.updateCaseStatus(999L, "COMPLETED")).thenReturn(null);
 
-        mockMvc.perform(put("/api/tasks/999/status")
+        mockMvc.perform(put("/api/cases/999/status")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"status\": \"COMPLETED\"}"))
                 .andExpect(status().isNotFound());
     }
 
     @Test
-    @DisplayName("Should delete task successfully")
-    void deleteTask_ExistingTask_ReturnsNoContent() throws Exception {
-        when(taskService.deleteTask(1L)).thenReturn(true);
+    @DisplayName("Should delete case successfully")
+    void deleteCase_ExistingCase_ReturnsNoContent() throws Exception {
+        when(caseService.deleteCase(1L)).thenReturn(true);
 
-        mockMvc.perform(delete("/api/tasks/1"))
+        mockMvc.perform(delete("/api/cases/1"))
                 .andExpect(status().isNoContent());
     }
 
     @Test
-    @DisplayName("Should return not found when deleting non-existent task")
-    void deleteTask_NonExistentTask_ReturnsNotFound() throws Exception {
-        when(taskService.deleteTask(999L)).thenReturn(false);
+    @DisplayName("Should return not found when deleting non-existent case")
+    void deleteCase_NonExistentCase_ReturnsNotFound() throws Exception {
+        when(caseService.deleteCase(999L)).thenReturn(false);
 
-        mockMvc.perform(delete("/api/tasks/999"))
+        mockMvc.perform(delete("/api/cases/999"))
                 .andExpect(status().isNotFound());
     }
 }
